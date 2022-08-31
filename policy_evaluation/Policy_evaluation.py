@@ -2,9 +2,11 @@ from IPython.core.debugger import set_trace
 import numpy as np
 import pprint
 import sys
-if "../" not in sys.path:
-  sys.path.append("../") 
-from lib.envs.gridworld import GridworldEnv    ##version 0.21.0
+if "/home/uif15692/RL_exercise/libRL/envs" not in sys.path:
+  sys.path.append("/home/uif15692/RL_exercise/")
+sys.path.append("/home/uif15692/RL_exercise/")      ## add the path that contains Lib not the paht of Lib !!!!!!! 
+                                                    ## And check if the pck is with __init__.py,if it is empty add manully by sys.path.append
+from Lib.envs.gridworld import GridworldEnv   ##gym version 0.21.0
 
 
 pp = pprint.PrettyPrinter(indent=2)
@@ -28,8 +30,8 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
     """
     # Start with a random (all 0) value function
     V = np.zeros(env.nS)
-    print(V)
-    while True:
+    N_Converge = True
+    while N_Converge :
         delta = 0
         # For each state, perform a "full backup"
         for s in range(env.nS):
@@ -45,8 +47,13 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
             V[s] = v
         # Stop evaluating once our value function change is below a threshold
         if delta < theta:
-            break
-    return np.array(V)
+            N_Converge = False
+    return V.reshape(env.shape)
+
+
+
+random_policy = np.ones([env.nS, env.nA]) / env.nA   #1/4 for each action 
+v = policy_eval(random_policy, env)
 
 
 
