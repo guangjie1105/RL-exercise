@@ -48,12 +48,13 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
         # Stop evaluating once our value function change is below a threshold
         if delta < theta:
             N_Converge = False
-    return V.reshape(env.shape)
+    return V
 
 
 
 random_policy = np.ones([env.nS, env.nA]) / env.nA   #1/4 for each action 
 v = policy_eval(random_policy, env)
-
-
+## Test if results math upto decimal 2
+expected_v = np.array([0, -14, -20, -22, -14, -18, -20, -20, -20, -20, -18, -14, -22, -20, -14, 0])
+np.testing.assert_array_almost_equal(v, expected_v, decimal=2)
 
