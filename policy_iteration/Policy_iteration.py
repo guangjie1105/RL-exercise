@@ -68,16 +68,21 @@ def policy_improvement(env, policy_eval_fn=policy_eval, discount_factor=1.0):
     while True:
         #Evaluate current policy
         V = policy_eval_fn(policy,env,discount_factor)
-        policy_stable = True
+        policy_stable = np.full((env.nS,), True)    # boolean vector with length env.nS to check if policy is stable for all state
         for s in range(env.nS):
             #chose the action that has max prob in pi(s)
+            stable =  False
             chosen_a = np.argmax(policy[s])
             #chose the action that max Q value
             best_a = np.argmax(cal_Q(s,V))
             if chosen_a != best_a:
-                policy_stable = False
+                stable = False
+            else:
+                stable = True
+            policy_stable[s] = stable
             policy[s] =  np.eye(env.nA)[best_a]   # greedy policy
-        if policy_stable: # only check for the last state,if the last state is stable ,policy and V converge ????
+        print(policy)
+        if policy_stable.all(): # end condition all state is true
             return policy,V
             break
 
