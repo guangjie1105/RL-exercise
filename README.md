@@ -18,6 +18,8 @@ branch master
 --3.Implement Value Iteration in Python (Gridworld)
 
 
+--4.To do Implement Gambler's Problem
+
 
 
 二.Model Free
