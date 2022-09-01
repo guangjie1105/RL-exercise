@@ -27,4 +27,4 @@ branch master
 -1.Monte Carlo Model-Free Prediction & Control
 
 
---1.1 MC Predection for Q(s,a) 
+--1.1 Every visit MC Predection for V(s)
