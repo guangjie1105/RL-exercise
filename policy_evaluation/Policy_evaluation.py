@@ -50,7 +50,7 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
             else:
                 N_Converge[s] = False
             V[s] = v
-        # Stop evaluating once our value function for all states changes is below a threshold
+        # Stop evaluating once our value function for !! all states !! changes is below a threshold
         
         print(N_Converge)
         if N_Converge.all():
