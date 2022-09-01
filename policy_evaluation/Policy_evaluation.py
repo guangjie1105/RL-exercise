@@ -30,8 +30,8 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
     """
     # Start with a random (all 0) value function
     V = np.zeros(env.nS)
-    N_Converge = True
-    while N_Converge :
+    N_Converge = np.full((env.nS),True)    #change to a vector to check is all state is stable
+    while True :
         delta = 0
         # For each state, perform a "full backup"
         for s in range(env.nS):
@@ -43,11 +43,18 @@ def policy_eval(policy, env, discount_factor=1.0, theta=0.00001):
                     # Calculate the expected value. Ref: Sutton book eq. 4.6.
                     v += action_prob * prob * (reward + discount_factor * V[next_state])
             # How much our value function changed (across any states)
-            delta = max(delta, np.abs(v - V[s]))
+            delta =  np.abs(v - V[s])
+            print('delta',delta)
+            if delta<theta:
+                N_Converge[s] = True
+            else:
+                N_Converge[s] = False
             V[s] = v
-        # Stop evaluating once our value function change is below a threshold
-        if delta < theta:
-            N_Converge = False
+        # Stop evaluating once our value function for all states changes is below a threshold
+        
+        print(N_Converge)
+        if N_Converge.all():
+            break
     return V
 
 
