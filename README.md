@@ -1,4 +1,4 @@
-# RL-exercise           [ On construnction]  
+# RL-exercise           [ In construnction]  
 The exercise follow David Silver lecture
 
 branch master
