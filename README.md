@@ -24,9 +24,14 @@ branch master
 
 二.Model Free
 
--1.Monte Carlo Model-Free Prediction & Control
+-1. Model-Free Monte Carlo Prediction & Control
 
 
 --1.1 Every visit MC Predection for V(s)
 
 --1.2 GELIE epsilon greedy MC Contorl for Q(s,a)
+
+--1.3 To Do Implement the off-policy every-visit Monte Carlo Control using Weighted Important Sampling algorithm (Importance Sampling does not work frequently)
+
+
+-2. Model-Free Prediction & Control with Temporal Difference (TD) and Q-Learning
