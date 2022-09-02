@@ -37,3 +37,5 @@ branch master
 -2. Model-Free Prediction & Control with Temporal Difference (TD) and Q-Learning
 
 --2.1 SARSA(0) by GELIE Epsilon greedy
+
+--2.2 Q learning with MAX SARSA
