@@ -32,7 +32,7 @@ def make_epsilon_greedy_policy(Q, epsilon, nA):
     def policy_fn(observation):
         A = np.ones(nA, dtype=float) * epsilon / nA
         best_action = np.argmax(Q[observation])
-        A[best_action] += (1.0 - epsilon)
+        A[best_action] += (1.0 - epsilon)     ####epsilon/nA+(1-epsilon)
         return A
     return policy_fn    
 
