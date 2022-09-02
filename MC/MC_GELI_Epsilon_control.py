@@ -112,9 +112,10 @@ def mc_control_epsilon_greedy(env, num_episodes, discount_factor=1.0):
             # Sum up all rewards since the first occurance
             G = sum([x[2]*(discount_factor**i) for i,x in enumerate(episode[first_occurence_idx:])]) #No matter for Q or V,return is afterwards reward
             # Calculate average return for this state over all sampled episodes
-            returns_sum[sa_pair] += G
+            #returns_sum[sa_pair] += G
             returns_count[sa_pair] += 1.0
-            Q[state][action] = returns_sum[sa_pair] / returns_count[sa_pair]     
+            #Q[state][action] =  returns_sum[sa_pair]/ returns_count[sa_pair]
+            Q[state][action] = Q[state][action]+(G-Q[state][action]) / returns_count[sa_pair]   ##Incremental update    
         
         # The policy is improved implicitly by changing the Q dictionary
     
