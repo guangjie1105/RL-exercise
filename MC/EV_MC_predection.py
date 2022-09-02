@@ -65,18 +65,19 @@ def mc_prediction(policy, env, num_episodes, discount_factor=1.0):
         print('episode',episode)
         states_in_episode = set([x[0] for x in episode])    #Take the first element of ith element in episode,compose a set.
         print('states_in_episode',states_in_episode)
-        
+        used_idx = []
         ### Update valuse function for each state
         for state in states_in_episode:
+            
             # Find the first occurance of the state in the episode
-            first_occurence_idx = next(i for i,x in enumerate(episode) if x[0] == state)   #Because use reward afterwards so need to find where this state starts
+            first_occurence_idx = next(i for i,x in enumerate(episode) if x[0] == state and i not in used_idx)   #Because use reward afterwards so need to find where this state starts
                                        #need index so make it as an enumerate
                                        #next(iter，stopdef),need an iterator  like lier(list),this this case i is from for loop ,so it is iterator
                                        #return i for i in enumerate(episode) if x[0] == state
             """for i,x in enumerate(episode):
-                if x[0] == state:
+                if x[0] == state:                     #add not in part to avoid that if there are repeated states in one episode find the correct index of each one 
                     first_occurence_idx = i"""
-                 
+            used_idx.append(first_occurence_idx)     
             print('first_occurence_idx',first_occurence_idx)
             # Sum up all rewards since the first occurance
             G = sum([x[2]*(discount_factor**i) for i,x in enumerate(episode[first_occurence_idx:])])   
