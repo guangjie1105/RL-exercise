@@ -6,6 +6,8 @@ branch master
 
 一.Model Based
 
+(TD)
+
 
 -1.Implement Policy Evaluation in Python (Gridworld)
 
@@ -25,7 +27,7 @@ branch master
 二.Model Free
 
 -1. Model-Free Monte Carlo Prediction & Control
-
+(MC)
 
 --1.1 Every visit MC Predection for V(s)
 
@@ -35,6 +37,8 @@ branch master
 
 
 -2. Model-Free Prediction & Control with Temporal Difference (TD) and Q-Learning
+
+(TD)
 
 --2.1 SARSA(0) by GELIE Epsilon greedy
 
