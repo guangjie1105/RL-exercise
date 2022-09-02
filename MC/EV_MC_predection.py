@@ -63,7 +63,7 @@ def mc_prediction(policy, env, num_episodes, discount_factor=1.0):
         ### Extract stae from episode
         # We convert each state to a tuple so that we can use it as a dict key
         print('episode',episode)
-        states_in_episode = set([x[0] for x in episode])    #Take the first element of ith element in episode,compose a set.
+        states_in_episode = set([x[0] for x in episode])    #Take the first element of tuple in episode,compose a set.
         print('states_in_episode',states_in_episode)
         used_idx = []
         ### Update valuse function for each state
