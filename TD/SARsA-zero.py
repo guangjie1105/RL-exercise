@@ -87,9 +87,9 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
         action = np.random.choice(np.arange(env.action_space.n),p = probs)  # sample action with respect to policy
         for t in itertools.count():     #itertools.count() incremental number,action is not looped beacuse now its online update
             next_state,reward,done,_ = env.step(action)
-            next_action_probs = Policy(state)
+            next_action_probs = Policy(next_state)
             next_action = np.random.choice(np.arange(len(next_action_probs)), p = next_action_probs) #sample next action
-            policy[state] = next_action_probs  #update policy
+            policy[next_state] = next_action_probs  #update policy
             # Update statistics,does not matter
             stats.episode_rewards[i_episode-1] += reward
             stats.episode_lengths[i_episode-1] = t
