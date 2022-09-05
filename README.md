@@ -43,3 +43,11 @@ branch master
 --2.1 SARSA(0) by GELIE Epsilon greedy
 
 --2.2 Q learning with MAX SARSA
+
+
+-3.Value Functin approximation
+
+（Value_approx）
+
+--3.1 SGD linear Q value fucion approximator with Q learning
+
