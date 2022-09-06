@@ -44,10 +44,16 @@ branch master
 
 --2.2 Q learning with MAX SARSA
 
+--2.3 TO DO ,TD(lambda with eligibity trace)
 
 -3.Value Functin approximation
 
 （Value_approx）
 
 --3.1 SGD linear Q value fucion approximator with Q learning
+
+
+-4.Deep Q Network
+
+--4.1 Deep Q learning (maze,run,Network)
 
