@@ -3,6 +3,10 @@
 
 
 ##Run avec vitural python 3.6env
+#from msilib.schema import Class
+from gettext import translation
+from re import A
+from xml.etree.ElementTree import QName
 import gym
 from gym.wrappers import Monitor
 import itertools
@@ -59,7 +63,11 @@ class Estimator():
         self.scope = scope
         # Writes Tensorboard summaries to disk
         self.summary_writer = None
+        self.X_pl = tf.placeholder(shape=[None, 84, 84, 4], dtype=tf.uint8, name="X")
+        self.y_pl = tf.placeholder(shape=[None], dtype=tf.float32, name="y")
+        self.actions_pl = tf.placeholder(shape=[None], dtype=tf.int32, name="actions")
         with tf.variable_scope(scope):
+            
             # Build the graph
             self._build_model()
             if summaries_dir:
@@ -67,7 +75,7 @@ class Estimator():
                 if not os.path.exists(summary_dir):
                     os.makedirs(summary_dir)
                 self.summary_writer = tf.summary.FileWriter(summary_dir)
-
+            
     def _build_model(self):
         """
         Builds the Tensorflow graph.
@@ -75,11 +83,11 @@ class Estimator():
 
         # Placeholders for our input
         # Our input are 4 grayscale frames of shape 84, 84 each
-        self.X_pl = tf.placeholder(shape=[None, 84, 84, 4], dtype=tf.uint8, name="X") #batch of image
+        #self.X_pl = tf.placeholder(shape=[None, 84, 84, 4], dtype=tf.uint8, name="X") #batch of image
         # The TD target value
-        self.y_pl = tf.placeholder(shape=[None], dtype=tf.float32, name="y")  #for each action
+        #self.y_pl = tf.placeholder(shape=[None], dtype=tf.float32, name="y")  #for each action
         # Integer id of which action was selected
-        self.actions_pl = tf.placeholder(shape=[None], dtype=tf.int32, name="actions")
+        #self.actions_pl = tf.placeholder(shape=[None], dtype=tf.int32, name="actions")
 
         X = tf.to_float(self.X_pl) / 255.0  #normalization  None*84*84*4
         batch_size = tf.shape(self.X_pl)[0] 
@@ -150,7 +158,7 @@ class Estimator():
             feed_dict)
         if self.summary_writer:
             self.summary_writer.add_summary(summaries, global_step)
-        return loss,summaries
+        return loss
 
 
 
@@ -169,7 +177,7 @@ with tf.Session() as sess:
     # Example observation batch
     observation = env.reset()
     
-    observation_p = sp.process(sess, observation)
+    observation_p = sp.process(sess, observation)  #84*84
     observation = np.stack([observation_p] * 4, axis=2)   #add along axis 2 84*84*4
     observations = np.array([observation] * 2)    # outside value*2,inside first dimension*2
     
@@ -182,3 +190,125 @@ with tf.Session() as sess:
     print(e.update(sess, observations, a, y))
 
 
+
+class ModelParamettersCopier():
+    """Copy model para from train network to target network"""
+
+    def __init__(self,estimaor1,estimator2):
+        self.update_ops = []
+        e1_params =[t for t in tf.trainable_variables() if t.name.startwith(estimaor1.scope)]
+        e2_params = [t for t in tf.trainable_variables() if t.name.startwith(estimator2.scope)]
+        e1_params = sorted(e1_params,key=lambda v:v.name)  #sort by name 
+        e2_params = sorted(e2_params,key = lambda v : v.name)
+
+        for e1,e2 in zip(e1_params,e2_params):    #zip:make tuple for each element in two groups
+            op = e2.assign(e1)            #return array
+            self.update_ops.append(op)
+
+
+    def make(sess,self):
+        sess.run(self.update_ops)
+
+
+def make_epsilon_greedy_policy(estimator, nA):
+    """argmax for the estimator prediction for the state
+    A:nA array:epsilon/nA prob random action ,epsilon/nA+(1-eplision) prob greedy action"""
+
+    def policy_fn(sess,observation,epsilon):     # ? observation 84*84*4 ?
+        
+        ''' return action prob in vector for observation '''
+        
+        A = np.ones(nA,dtype=float)*epsilon/nA
+        q_value = estimator.predict(sess,np.expand_dims(observation,0))[0] #self.X_pl need None*84*84*4
+        greedy_action_index = np.argmax(q_value)
+        A[greedy_action_index] += (1-epsilon)
+        return A
+    return policy_fn
+
+
+
+
+def q_learning(sess,env,epsilon_start,epsilon_end,epsilon_decay_steps,reply_memory_seize,make_epsilon_gredy_policy\
+    ,q_estimator,target_estimator,StateProcessor,num_episodes,update_step,batch_size,discount_factor):
+    total_t = sess.run(tf.contrib.framework.get_global_step())
+    reply_memory = []
+    epsilons = np.linspace(epsilon_start,epsilon_end,epsilon_decay_steps)
+    policy = make_epsilon_gredy_policy(q_estimator,len(VALID_ACTIONS))
+    state = env.reset()
+    state = StateProcessor.process(sess,state) #84 *84
+    state = np.stack([state]*4,axis = 2) #84*84*4
+    Transition = namedtuple('transition',['state','action','next_state','reward','done'])
+
+    ##### store experience with reply_memory_size
+    for i in range(reply_memory_seize):
+        action_probs = policy(sess,state,epsilons[min(total_t,epsilon-1)])
+        action_index = np.random.choice(np.arange(len(VALID_ACTIONS)),action_probs)
+        next_state,reward,done,_ = env.step(VALID_ACTIONS[action_index])
+        next_state = StateProcessor.process(sess,next_state)
+        next_state = np.append(state[:,:,1:],np.expend_dims(next_state,2),axis = 2)  
+        #84*84*4 ,8*84*1 ,axis = 2--->the shape excluding specific axis should be same
+        reply_memory.append()
+        if done:
+            state = env.reset()
+            state = StateProcessor.process(sess,state)
+            state = np.stack([state]*4, axis=2)
+        else:
+            state = next_state
+
+    estimator_copy = ModelParamettersCopier(q_estimator, target_estimator)
+    ##### Main traing
+    for i_episode in range(num_episodes):
+        ##Experience replay+robot running
+        state = env.reset()
+        state = StateProcessor.process(sess,state)
+        state = np.stack([state]*4,axis=2)
+        for t in itertools.count():
+            epsilon = epsilons[min(total_t, epsilon_decay_steps-1)]
+            ##update Q target
+            if total_t%update_step==0:
+                estimator_copy.make(sess)
+                print("update fixed Q target")
+            ##update replay_memory
+            action_probs = policy(sess,state,epsilon)
+            action  = np.random.choice(np.arrange(len(VALID_ACTIONS)),action_probs)
+            next_state,reward,done,_ = env.step(VALID_ACTIONS[action])
+            next_state = StateProcessor.process(sess,next_state)
+            next_state = np.append(state[:,:,1:],np.expend_dims(next_state,2),axis=2)
+            update_index = t%reply_memory_seize
+            transition =Transition(state, action,next_state,reward,done) 
+            reply_memory[update_index]=transition
+            ##Feed with batch size data from replay_memory
+            samples = random.sample(reply_memory,batch_size)
+            state_batch,action_batch,next_state_batch,reward_batch,done_batch = map(np.array,zip(*samples))
+            #unpack
+            ###Target
+            q_valuse_next = target_estimator.predict(sess,next_state_batch)
+            target_batch = reward_batch + discount_factor*np.invert(done_batch).astype(np.float32)*np.argmax(q_valuse_next)
+
+            
+            ###SGD
+            loss = q_estimator.update(sess,state_batch,action_batch,target_batch)
+
+            if done:
+                break
+            state = next_state
+            total_t+=1
+
+
+
+        
+
+
+
+
+
+
+
+
+
+    
+
+
+        
+
+        

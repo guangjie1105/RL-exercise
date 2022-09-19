@@ -5,7 +5,7 @@ tf.disable_v2_behavior()
 
 ##For different sess
 np.random.seed(1)
-tf.set_random_seed(1)  ##for version after 2.0
+tf.set_random_seed(1)  ##tf version need 1
 
 
 # Deep Q Network off-policy
